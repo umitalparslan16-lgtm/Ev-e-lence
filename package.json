@@ -1,0 +1,22 @@
+{
+  "name": "hudhud-kuran",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "data": "node scripts/build-data.mjs",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build && node scripts/gen-sw.mjs",
+    "fetch-audio": "node scripts/fetch-audio.mjs",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "idb-keyval": "^6.3.0",
+    "preact": "^10.29.8"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.6",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.6"
+  }
+}
