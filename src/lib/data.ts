@@ -1,4 +1,5 @@
 import raw from '../data/quran.json';
+import letters from '../../data/letters.json';
 
 export type Word = {
   t: string; // metin (Türk imlası)
@@ -52,15 +53,6 @@ export const baseOf = (cluster: string) => {
 };
 export const baseLetters = (word: string) => clusters(word).map(baseOf);
 
-export const LETTER_NAMES: Record<string, string> = {
-  'ا': 'elif', 'ب': 'be', 'ت': 'te', 'ث': 'se', 'ج': 'cim', 'ح': 'ha', 'خ': 'hı', 'د': 'dal', 'ذ': 'zel',
-  'ر': 'ra', 'ز': 'ze', 'س': 'sin', 'ش': 'şın', 'ص': 'sad', 'ض': 'dad', 'ط': 'tı', 'ظ': 'zı', 'ع': 'ayın',
-  'غ': 'ğayın', 'ف': 'fe', 'ق': 'kaf', 'ك': 'kef', 'ل': 'lam', 'م': 'mim', 'ن': 'nun', 'و': 'vav', 'ه': 'he', 'ي': 'ye',
-};
-
-/** Karıştırılan harf çiftleri: önce şekilce benzerler, sonra sesçe yakın olanlar. */
-export const CONFUSABLE: [string, string][] = [
-  ['ب', 'ت'], ['ت', 'ث'], ['ب', 'ث'], ['ج', 'ح'], ['ح', 'خ'], ['ج', 'خ'], ['د', 'ذ'], ['ر', 'ز'],
-  ['س', 'ش'], ['ص', 'ض'], ['ط', 'ظ'], ['ع', 'غ'], ['ف', 'ق'],
-  ['س', 'ص'], ['ث', 'س'], ['ت', 'ط'], ['ذ', 'ز'], ['ز', 'ظ'], ['ح', 'ه'], ['ك', 'ق'],
-];
+// Harf adları ve karıştırılan harf çiftleri (şekilce benzerler, sonra sesçe yakınlar): data/letters.json
+export const LETTER_NAMES: Record<string, string> = letters.names;
+export const CONFUSABLE = letters.confusable as [string, string][];

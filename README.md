@@ -26,6 +26,13 @@ altın yıldızlarla kedi yavrusuna hediye alınır. Ebeveyn onayı ilerlemek i�
 **Ebeveyn köşesi** (👪, çarpma sorusuyla açılır): kayıtları dinleme ve onaylama, Hüdhüd'ün cümlelerini kendi
 sesinizle kaydetme, kâri seçimi, günlük süre, yazı boyu, şedde/cezim renklendirme (yardım modu).
 
+## Hüdhüd'ün sesi
+
+Hüdhüd'ün cümleleri `data/hudhud-lines.json` dosyasındadır. Yayın sırasında GitHub Actions bu cümleleri
+Microsoft Edge'in sinirsel Türkçe sesiyle (**tr-TR-EmelNeural**) MP3'e çevirir (`scripts/gen-voice.py`).
+Ses, hız, ton ve çocuğun adı `data/voice-config.json` dosyasından değiştirilir. Çalma sırası:
+ebeveynin kendi kaydı → hazır ses → telefonun yapay sesi.
+
 ## Kur'an metni hakkında
 
 Metin, Tanzil metni kelime kelime temel alınarak **Türkiye (Diyanet) mushaf imlasına** elle uyarlandı:

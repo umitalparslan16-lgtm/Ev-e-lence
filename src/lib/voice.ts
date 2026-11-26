@@ -2,41 +2,13 @@ import { useEffect, useState } from 'preact/hooks';
 import { getState } from './store';
 import { loadRec, voiceKey } from './recorder';
 import { main, wordEl } from './audio';
+import linesJson from '../../data/hudhud-lines.json';
 
-// Hüdhüd'ün sabit cümleleri. Ebeveyn köşesinden her biri kendi sesinizle kaydedilebilir;
-// kayıt varsa o çalar, yoksa telefonun Türkçe sesi okur. {ad} = çocuğun adı.
-export const LINES = {
-  hosgeldin: "Esselâmü aleyküm {ad}! Ben Hüdhüd. Bugün birlikte Kur'an okuyalım mı?",
-  durakSec: 'Hangi durağa gidelim? Parlayan durağa dokun!',
-  durak: 'Bu durakta üç yıldız var. Dinle, oku, oyna!',
-  dinleBasla: 'Önce güzelce dinleyelim. Renklenen kelimeyi gözünle takip et.',
-  dinleBitti: 'Maşallah {ad}! Sayfanın hepsini dinledin. Bir yıldız kazandın!',
-  okuBasla: 'Şimdi sıra sende! Kırmızı düğmeye dokun ve ayeti oku.',
-  okuKayit: 'Ne güzel okudun! Hadi bir sonraki ayete geçelim.',
-  okuBitti: 'Bârekallah {ad}! Bütün ayetleri okudun. Bir yıldız daha!',
-  oynaBasla: 'Haydi oynayalım! Dikkatlice bak.',
-  seddeSoru: 'Şeddeli kelimeyi bul!',
-  cezimSoru: 'Cezimli kelimeyi bul!',
-  duySoru: 'Duyduğun kelimeyi bul!',
-  dogru1: 'Aferin!',
-  dogru2: 'Harika!',
-  dogru3: 'Maşallah!',
-  yanlis: 'Bir daha bakalım mı? Sen yaparsın!',
-  oynaBitti: 'Süpersin {ad}! Oyunu bitirdin. Bir yıldız kazandın!',
-  durakTamam: 'Üç yıldızın hepsini topladın! Yeni durak açıldı!',
-  tekrar: 'Tekrar ettiğin için bahçene bir yıldız daha!',
-  bahce: 'Burası senin bahçen. Yıldızlarınla çiçek ve ağaç ekebilirsin.',
-  ekildi: 'Ne güzel oldu!',
-  altin: 'Bir altın yıldızın var! Kediciğe hediye alabilirsin.',
-  kedi: 'Kedicik seni çok seviyor!',
-  gorevDinle: 'Bugünün görevi: sayfayı dinlemek!',
-  gorevOku: 'Bugünün görevi: ayetleri okumak!',
-  gorevOyna: 'Bugünün görevi: kelime oyunu oynamak!',
-  gorevTekrar: 'Bugün sevdiğin bir sayfayı tekrar edelim mi?',
-  mola: 'Bugün çok güzel çalıştın {ad}. Biraz dinlenelim mi? Yarın yine görüşürüz!',
-} as const;
+// Hüdhüd'ün sabit cümleleri: data/hudhud-lines.json. {ad} = çocuğun adı.
+// Çalma sırası: ebeveynin kendi kaydı → hazır ses dosyası (voice/) → telefonun yapay sesi.
+export const LINES = linesJson as Record<keyof typeof linesJson, string>;
 
-export type LineId = keyof typeof LINES;
+export type LineId = keyof typeof linesJson;
 export const CORRECT: LineId[] = ['dogru1', 'dogru2', 'dogru3'];
 
 const fill = (t: string) => t.replace(/\{ad\}/g, getState().childName || '');
@@ -80,20 +52,56 @@ function tts(text: string): Promise<void> {
   });
 }
 
+// ---- Hazır ses dosyaları (derlemede Microsoft Emel sesiyle üretilir) ----
+type Manifest = { name: string; files: string[] };
+let manifest: Manifest | null = null;
+fetch('voice/manifest.json')
+  .then((r) => (r.ok ? r.json() : null))
+  .then((m) => (manifest = m))
+  .catch(() => {});
+
+const norm = (x: string) => x.trim().toLocaleLowerCase('tr');
+
+/** Bu cümlenin hazır ses dosyası (yoksa null). İsimli cümlede ad uyuşmazsa isimsiz sürüm. */
+function clipFor(id: string, named: boolean): string | null {
+  if (!manifest || !getState().settings.readyVoice) return null;
+  let f = id;
+  if (named && norm(manifest.name) !== norm(getState().childName)) f = `${id}-noname`;
+  return manifest.files.includes(f) ? `voice/${f}.mp3` : null;
+}
+
+export const letterClipId = (a: string, b: string) =>
+  `harf-${a.codePointAt(0)!.toString(16)}-${b.codePointAt(0)!.toString(16)}`;
+
 let customEl: HTMLAudioElement | null = null;
 let token = 0;
 
 /** Hüdhüd bir cümle söyler (önce ebeveyn kaydı, yoksa yapay ses). Balon metni ekranda kalır. */
 export async function say(id: LineId): Promise<void> {
-  return sayRaw(fill(LINES[id]), id);
+  return sayRaw(fill(LINES[id]), id, clipFor(id, LINES[id].includes('{ad}')));
+}
+
+/** Oyundaki "be mi, te mi?" sorusu. */
+export function sayLetters(text: string, a: string, b: string) {
+  return sayRaw(text, null, clipFor(letterClipId(a, b), false));
 }
 
 /** Kaydedilemeyen, anlık oluşan cümleler için (ör. "be mi, te mi?"). */
 export function sayText(text: string) {
-  return sayRaw(text, null);
+  return sayRaw(text, null, null);
 }
 
-async function sayRaw(text: string, id: LineId | null) {
+function playUrl(url: string) {
+  customEl = new Audio(url);
+  return new Promise<boolean>((r) => {
+    customEl!.onended = () => r(true);
+    customEl!.onpause = () => r(true);
+    customEl!.onerror = () => r(false);
+    customEl!.play().catch(() => r(false));
+  });
+}
+
+async function sayRaw(text: string, id: LineId | null, clip: string | null) {
   const my = ++token;
   quiet();
   main.pause();
@@ -107,15 +115,10 @@ async function sayRaw(text: string, id: LineId | null) {
     if (my !== token || !main.paused) return;
     if (rec) {
       const url = URL.createObjectURL(rec.blob);
-      customEl = new Audio(url);
-      await new Promise<void>((r) => {
-        customEl!.onended = () => r();
-        customEl!.onpause = () => r();
-        customEl!.play().catch(() => r());
-      });
+      await playUrl(url);
       URL.revokeObjectURL(url);
-    } else {
-      await tts(text);
+    } else if (!(clip && (await playUrl(clip)))) {
+      if (my === token) await tts(text);
     }
   } finally {
     if (my === token) {

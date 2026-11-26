@@ -27,6 +27,14 @@ jobs:
       - run: npm run data
       - name: Sesleri indir
         run: npm run fetch-audio
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Hüdhüd'ün sesini üret (Microsoft Emel)
+        continue-on-error: true
+        run: |
+          pip install edge-tts==7.3.1
+          python scripts/gen-voice.py
       - run: npm run build
       - uses: actions/configure-pages@v5
         with:

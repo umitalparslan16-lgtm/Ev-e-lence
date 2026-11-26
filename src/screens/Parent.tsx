@@ -207,8 +207,12 @@ function SettingsPanel() {
           <option value="minshawy">Minşâvî + çocuklar (öğretici) — ayet takibi</option>
         </select>
       </label>
+      <label class="check">
+        <input type="checkbox" checked={s.settings.readyVoice} onChange={(e) => set((st) => void (st.readyVoice = (e.target as HTMLInputElement).checked))} />
+        Hüdhüd'ün hazır sesini kullan (Emel). Kapalıysa telefonun sesi konuşur.
+      </label>
       <label class="field">
-        Hüdhüd'ün yapay sesi
+        Telefonun yapay sesi (yedek)
         <select value={s.settings.voiceName} onChange={(e) => set((st) => void (st.voiceName = (e.target as HTMLSelectElement).value))}>
           <option value="">Varsayılan Türkçe ses</option>
           {voices.map((v) => (

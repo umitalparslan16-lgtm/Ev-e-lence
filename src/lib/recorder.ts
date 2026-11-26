@@ -25,10 +25,11 @@ export class Recorder {
 
   async start(maxSec = 90, onAutoStop?: () => void) {
     this.stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true },
+      // Konuşma kaydı: telefonun filtreleri sesi boğuk yapıyor, kapalı tutuyoruz.
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: true, channelCount: 1 },
     });
     const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find((m) => MediaRecorder.isTypeSupported(m));
-    this.mr = new MediaRecorder(this.stream, mime ? { mimeType: mime } : undefined);
+    this.mr = new MediaRecorder(this.stream, mime ? { mimeType: mime, audioBitsPerSecond: 96000 } : { audioBitsPerSecond: 96000 });
     this.chunks = [];
     this.mr.ondataavailable = (e) => e.data.size && this.chunks.push(e.data);
     this.mr.start();

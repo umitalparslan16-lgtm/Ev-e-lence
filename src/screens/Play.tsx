@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'preact/hooks';
 import { pageByNo, playable, baseLetters, baseOf, CONFUSABLE, LETTER_NAMES, type Word } from '../lib/data';
 import { useStore, award, go, type AwardResult } from '../lib/store';
 import { playWord, sfx, stopAll } from '../lib/audio';
-import { say, sayText, CORRECT } from '../lib/voice';
+import { say, sayLetters, CORRECT } from '../lib/voice';
 import { WordText } from '../components/Mushaf';
 import { Celebrate, Guide, TopBar, Screen } from '../components/UI';
 
@@ -102,7 +102,7 @@ function Game({ page, onAgain }: { page: number; onAgain: () => void }) {
     (async () => {
       if (q.kind === 'harf') {
         await playWord(q.word.wbw);
-        await sayText(`${LETTER_NAMES[q.options[0]]} mi, ${LETTER_NAMES[q.options[1]]} mi?`);
+        await sayLetters(`${LETTER_NAMES[q.options[0]]} mi, ${LETTER_NAMES[q.options[1]]} mi?`, q.options[0], q.options[1]);
       } else if (q.kind === 'isaret') {
         await say(q.mark === 'sh' ? 'seddeSoru' : 'cezimSoru');
       } else {
@@ -151,7 +151,7 @@ function Game({ page, onAgain }: { page: number; onAgain: () => void }) {
       <TopBar back={{ name: 'station', page }} title="🎮 Oyna" />
       <Guide
         onTap={() => {
-          if (q.kind === 'harf') sayText(`${LETTER_NAMES[q.options[0]]} mi, ${LETTER_NAMES[q.options[1]]} mi?`);
+          if (q.kind === 'harf') sayLetters(`${LETTER_NAMES[q.options[0]]} mi, ${LETTER_NAMES[q.options[1]]} mi?`, q.options[0], q.options[1]);
           else if (q.kind === 'isaret') say(q.mark === 'sh' ? 'seddeSoru' : 'cezimSoru');
           else playWord(q.options[q.answer].wbw);
         }}

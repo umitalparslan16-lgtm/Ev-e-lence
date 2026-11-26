@@ -15,6 +15,7 @@ export type Settings = {
   sessionMin: number;
   voiceName: string;
   fontScale: number;
+  readyVoice: boolean; // hazır (Emel) sesi kullan
 };
 
 export type State = {
@@ -46,7 +47,7 @@ const fresh = (): State => ({
   approved: [],
   garden: [],
   toys: [],
-  settings: { reciter: 'husary', slow: false, help: true, sessionMin: 15, voiceName: '', fontScale: 1 },
+  settings: { reciter: 'husary', slow: false, help: true, sessionMin: 15, voiceName: '', fontScale: 1, readyVoice: true },
   day: { date: today(), seconds: 0, repeats: [], breakShown: false },
 });
 
