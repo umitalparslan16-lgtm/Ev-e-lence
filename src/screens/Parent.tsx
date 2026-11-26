@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { PAGES, ayahsOf } from '../lib/data';
 import { useStore, update, approve, resetAll } from '../lib/store';
 import { Recorder, loadRec, saveRec, deleteRec, recKey, voiceKey, listRecKeys, playBlob, stopBlob } from '../lib/recorder';
-import { LINES, lineText, say, trVoices, type LineId } from '../lib/voice';
+import { LINES, lineText, say, trVoices, voiceInfo, type LineId } from '../lib/voice';
 import { sfx, stopAll } from '../lib/audio';
 import { TopBar, Screen } from '../components/UI';
 
@@ -209,8 +209,14 @@ function SettingsPanel() {
       </label>
       <label class="check">
         <input type="checkbox" checked={s.settings.readyVoice} onChange={(e) => set((st) => void (st.readyVoice = (e.target as HTMLInputElement).checked))} />
-        Hüdhüd'ün hazır sesini kullan (Emel). Kapalıysa telefonun sesi konuşur.
+        Hüdhüd'ün hazır sesini kullan. Kapalıysa telefonun sesi konuşur.
       </label>
+      <p class="muted">
+        Hazır ses: {voiceInfo()}{' '}
+        <button class="btn small" onClick={() => say('hosgeldin')}>
+          ▶️ Dene
+        </button>
+      </p>
       <label class="field">
         Telefonun yapay sesi (yedek)
         <select value={s.settings.voiceName} onChange={(e) => set((st) => void (st.voiceName = (e.target as HTMLSelectElement).value))}>

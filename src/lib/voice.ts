@@ -53,12 +53,15 @@ function tts(text: string): Promise<void> {
 }
 
 // ---- Hazır ses dosyaları (derlemede Microsoft Emel sesiyle üretilir) ----
-type Manifest = { name: string; files: string[] };
+type Manifest = { name: string; voice?: string; files: string[] };
 let manifest: Manifest | null = null;
 fetch('voice/manifest.json')
   .then((r) => (r.ok ? r.json() : null))
   .then((m) => (manifest = m))
   .catch(() => {});
+
+/** Ayarlarda göstermek için: hangi hazır ses yüklü? */
+export const voiceInfo = () => (manifest ? `${manifest.voice ?? '?'} · ${manifest.files.length} cümle` : 'yüklenmedi');
 
 const norm = (x: string) => x.trim().toLocaleLowerCase('tr');
 

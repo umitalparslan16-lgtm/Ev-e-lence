@@ -1,6 +1,12 @@
 {
   "name": "Amine Hüma",
-  "voice": "tr-TR-EmelNeural",
-  "rate": "-4%",
-  "pitch": "+18Hz"
+  "engine": "auto",
+  "edge": { "voice": "tr-TR-EmelNeural", "rate": "+0%", "pitch": "+0Hz" },
+  "elevenlabs": {
+    "voice_id": "",
+    "model_id": "eleven_multilingual_v2",
+    "stability": 0.45,
+    "similarity_boost": 0.8,
+    "style": 0.35
+  }
 }
