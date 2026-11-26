@@ -3,6 +3,7 @@ import { useStore, update } from '../lib/store';
 import { say } from '../lib/voice';
 import { sfx } from '../lib/audio';
 import { Kitten } from '../components/Art';
+import { FarmScene } from '../components/Farm';
 import { Guide, TopBar, Screen } from '../components/UI';
 
 const PLANTS = [
@@ -19,7 +20,7 @@ export function Garden() {
   const s = useStore();
   const [sel, setSel] = useState<string | null>(null);
   const [happy, setHappy] = useState(false);
-  const slots = Math.max(12, Math.ceil((s.garden.length + 3) / 3) * 3);
+  const slots = Math.max(9, Math.ceil((s.garden.length + 3) / 3) * 3);
 
   useEffect(() => {
     say(s.gold > 0 ? 'altin' : 'bahce');
@@ -61,38 +62,44 @@ export function Garden() {
       <TopBar back={{ name: 'home' }} title="🌷 Bahçem" />
       <Guide line="bahce" />
 
-      <div class="shop">
-        {PLANTS.map((p) => (
-          <button
-            class={`shop-item ${sel === p.kind ? 'sel' : ''}`}
-            disabled={s.seeds < p.cost}
-            onClick={() => setSel(sel === p.kind ? null : p.kind)}
-          >
-            <span class="shop-ico">{p.kind}</span>
-            <span class="shop-cost">{'⭐'.repeat(p.cost)}</span>
-          </button>
-        ))}
-      </div>
-      {sel && <p class="hint big-hint">Boş bir yere dokun 👇</p>}
-
-      <div class="yard">
-        <div class="plots">
-          {Array.from({ length: slots }, (_, i) => {
-            const g = s.garden.find((x) => x.slot === i);
-            return (
-              <button class={`plot ${g ? 'full' : ''} ${sel && !g ? 'ready' : ''}`} onClick={() => plant(i)} aria-label="Toprak">
-                {g ? <span class="grown">{g.kind}</span> : sel ? <span class="ghost">＋</span> : null}
-              </button>
-            );
-          })}
+      <div class="farm">
+        <FarmScene />
+        <div class="field-wrap">
+          <div class="field">
+            {Array.from({ length: slots }, (_, i) => {
+              const g = s.garden.find((x) => x.slot === i);
+              return (
+                <button class={`plot ${g ? 'full' : ''} ${sel && !g ? 'ready' : ''}`} onClick={() => plant(i)} aria-label="Toprak">
+                  {g ? <span class="grown">{g.kind}</span> : sel ? <span class="ghost" /> : null}
+                </button>
+              );
+            })}
+          </div>
         </div>
         <div class="kitty-zone">
           <button class="kitty" onClick={pet} aria-label="Kediyi sev">
-            <Kitten size={110} happy={happy} />
+            <Kitten size={96} happy={happy} />
             {happy && <span class="hearts">💕</span>}
           </button>
           <div class="toys">{s.toys.map((t) => <span>{t}</span>)}</div>
         </div>
+      </div>
+
+      <div class="seed-bag">
+        <h3 class="sub">🌱 Ne ekelim?</h3>
+        <div class="shop">
+          {PLANTS.map((p) => (
+            <button
+              class={`shop-item ${sel === p.kind ? 'sel' : ''}`}
+              disabled={s.seeds < p.cost}
+              onClick={() => setSel(sel === p.kind ? null : p.kind)}
+            >
+              <span class="shop-ico">{p.kind}</span>
+              <span class="shop-cost">{'⭐'.repeat(p.cost)}</span>
+            </button>
+          ))}
+        </div>
+        {sel ? <p class="hint big-hint">Toprakta parlayan bir yere dokun 👆</p> : s.seeds === 0 && <p class="hint">Yıldız kazandıkça buraya tohum gelir ⭐</p>}
       </div>
 
       <h3 class="sub">🌟 Kediciğe hediye</h3>

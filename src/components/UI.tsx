@@ -11,14 +11,14 @@ export function Guide({ line, onTap }: { line?: LineId; onTap?: () => void }) {
   return (
     <div class="guide">
       <button class="guide-bird" onClick={() => (onTap ? onTap() : line && say(line))} aria-label="Hüdhüd'ü dinle">
-        <Hudhud size={84} talking={speaking} />
+        <Hudhud size={120} talking={speaking} />
       </button>
       {bubble && <div class="bubble">{bubble}</div>}
     </div>
   );
 }
 
-export function TopBar({ back, title }: { back?: Route; title?: string }) {
+export function TopBar({ back, title, parent }: { back?: Route; title?: string; parent?: boolean }) {
   const s = useStore();
   return (
     <header class="topbar">
@@ -32,6 +32,10 @@ export function TopBar({ back, title }: { back?: Route; title?: string }) {
           }}
         >
           ⬅️
+        </button>
+      ) : parent ? (
+        <button class="icon-btn" aria-label="Ebeveyn köşesi" onClick={() => go({ name: 'parent' })}>
+          👪
         </button>
       ) : (
         <span class="icon-spacer" />
@@ -56,7 +60,19 @@ export function Stars({ n, of = 3, big = false }: { n: number; of?: number; big?
 }
 
 /** Kutlama ekranı: büyük yıldız + Hüdhüd cümlesi. */
-export function Celebrate({ line, extra, icon = '⭐', onDone }: { line: LineId; extra?: LineId; icon?: string; onDone: () => void }) {
+export function Celebrate({
+  line,
+  extra,
+  icon = '⭐',
+  onDone,
+  again,
+}: {
+  line: LineId;
+  extra?: LineId;
+  icon?: string;
+  onDone: () => void;
+  again?: () => void;
+}) {
   useEffect(() => {
     sfx.star();
     (async () => {
@@ -65,7 +81,7 @@ export function Celebrate({ line, extra, icon = '⭐', onDone }: { line: LineId;
     })();
   }, []);
   return (
-    <div class="overlay" onClick={onDone}>
+    <div class="overlay">
       <div class="celebrate">
         <div class="confetti">
           {Array.from({ length: 18 }, (_, i) => (
@@ -73,10 +89,15 @@ export function Celebrate({ line, extra, icon = '⭐', onDone }: { line: LineId;
           ))}
         </div>
         <div class="big-star">{icon}</div>
-        <Hudhud size={120} talking />
+        <Hudhud size={150} talking />
         <p class="rest-text">{lineText(line)}</p>
-        <button class="btn primary big" onClick={onDone}>
-          Devam ➡️
+        {again && (
+          <button class="btn primary big" onClick={again}>
+            Yeniden oyna 🔄
+          </button>
+        )}
+        <button class={`btn big ${again ? '' : 'primary'}`} onClick={onDone}>
+          {again ? 'Durağa dön ⬅️' : 'Devam ➡️'}
         </button>
       </div>
     </div>

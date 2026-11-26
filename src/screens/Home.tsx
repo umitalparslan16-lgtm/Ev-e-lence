@@ -9,7 +9,7 @@ export function Setup() {
   const [name, setName] = useState('');
   return (
     <Screen class="setup">
-      <Hudhud size={150} />
+      <Hudhud size={200} />
       <h1>Hüdhüd ile Kur'an</h1>
       <p class="note">Ebeveyn için: Hüdhüd çocuğunuzu adıyla karşılayacak. Ad ve kayıtlar yalnızca bu telefonda saklanır.</p>
       <label class="field">
@@ -64,17 +64,22 @@ export function Home() {
   }, []);
   return (
     <Screen class="home">
-      <TopBar />
+      <TopBar parent />
       <Guide line={task.line} />
-      <button class="task-card" onClick={() => go({ name: 'station', page: task.page })}>
-        <span class="task-ico">🎯</span>
-        <span>
+      <div class="home-tiles">
+        <button class="home-tile task" onClick={() => go({ name: 'station', page: task.page })}>
+          <span class="ht-ico">🎯</span>
           <b>Günün görevi</b>
-          <br />
-          {task.page}. durak
-        </span>
-        <span class="task-go">▶️</span>
-      </button>
+          <span class="ht-sub">{task.page}. durak ▶️</span>
+        </button>
+        <button class="home-tile garden" onClick={() => go({ name: 'garden' })}>
+          <span class="ht-ico">🏡</span>
+          <b>Bahçem</b>
+          <span class="ht-sub">
+            🌷 {s.garden.length} · ⭐ {s.seeds}
+          </span>
+        </button>
+      </div>
 
       <div class="map">
         <svg class="map-path" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -117,22 +122,13 @@ export function Home() {
               <span class="stop-label">{page.title}</span>
               {page.no === cur && (
                 <span class="stop-bird">
-                  <Hudhud size={56} />
+                  <Hudhud size={74} />
                 </span>
               )}
             </button>
           );
         })}
       </div>
-
-      <nav class="bottom-nav">
-        <button class="btn garden-btn" onClick={() => go({ name: 'garden' })}>
-          🌷 Bahçem
-        </button>
-        <button class="btn parent-btn" onClick={() => go({ name: 'parent' })} aria-label="Ebeveyn köşesi">
-          👪
-        </button>
-      </nav>
     </Screen>
   );
 }

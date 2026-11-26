@@ -48,7 +48,7 @@ export function App() {
           say('hosgeldin');
         }}
       >
-        <Hudhud size={180} />
+        <Hudhud size={230} />
         <h1>{s.childName}</h1>
         <button class="btn primary big">Dokun, başlayalım ▶️</button>
       </div>

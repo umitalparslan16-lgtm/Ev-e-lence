@@ -225,7 +225,12 @@ function Game({ page, onAgain }: { page: number; onAgain: () => void }) {
 
       {win &&
         (win.kind === 'new' ? (
-          <Celebrate line="oynaBitti" extra={win.pageDone ? 'durakTamam' : undefined} onDone={() => go({ name: 'station', page })} />
+          <Celebrate
+            line="oynaBitti"
+            extra={win.pageDone ? 'durakTamam' : undefined}
+            again={onAgain}
+            onDone={() => go({ name: 'station', page })}
+          />
         ) : (
           <div class="overlay">
             <div class="celebrate">
