@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { pageByNo, ayahsOf, arNum } from '../lib/data';
-import { useStore, award, progOf, getState, type AwardResult } from '../lib/store';
-import { sfx, stopAll } from '../lib/audio';
+import { pageByNo, ayahsOf, arNum, type AyahItem } from '../lib/data';
+import { useStore, update, award, progOf, getState, type AwardResult } from '../lib/store';
+import { sfx, stopAll, playWord, wordEl } from '../lib/audio';
 import { Recorder, saveRec, loadRec, recKey, listRecKeys, playBlob, stopBlob } from '../lib/recorder';
 import { say, setBubble } from '../lib/voice';
 import { Mushaf } from '../components/Mushaf';
@@ -18,6 +18,7 @@ export function Read({ page }: { page: number }) {
   const [secs, setSecs] = useState(0);
   const [mode, setMode] = useState<'idle' | 'model' | 'mine'>('idle');
   const [word, setWord] = useState(-1);
+  const [tap, setTap] = useState(-1); // dokunulan kelime
   const [win, setWin] = useState<AwardResult | null>(null);
   const rec = useRef(new Recorder());
   const session = useRef(new Set<string>());
@@ -46,6 +47,21 @@ export function Read({ page }: { page: number }) {
     stopBlob();
     setMode('idle');
     setWord(-1);
+    setTap(-1);
+  }
+
+  /** Takıldığı kelimeye dokununca okunuşu çalar; kayıt sürerken de çalışır (kayıt durmaz). */
+  async function tapWord(_it: AyahItem, i: number) {
+    if (mode !== 'idle') {
+      stopAll();
+      stopBlob();
+      setMode('idle');
+      setWord(-1);
+    }
+    wordEl.pause();
+    setTap(i);
+    await playWord(cur.words[i].wbw);
+    setTap((t) => (t === i ? -1 : t));
   }
 
   async function listenModel() {
@@ -103,6 +119,7 @@ export function Read({ page }: { page: number }) {
   }
 
   const go = (d: number) => {
+    setTap(-1);
     stopPlayback();
     setIdx((i) => Math.min(ayahs.length - 1, Math.max(0, i + d)));
   };
@@ -126,9 +143,34 @@ export function Read({ page }: { page: number }) {
         ))}
       </div>
 
-      <div class={`read-card ${recording ? 'rec' : ''}`} style={{ fontSize: `${2.4 * s.settings.fontScale}rem` }}>
-        <Mushaf page={pg} help={s.settings.help} only={cur.key} activeKey={mode === 'model' ? cur.key : null} activeWord={word} />
+      <div class="controls">
+        <button
+          class={`btn toggle ${s.settings.slow ? 'on' : ''}`}
+          onClick={() => update((d) => void (d.settings.slow = !d.settings.slow))}
+          aria-label="Yavaş"
+        >
+          {s.settings.slow ? '🐢 Yavaş' : '🐇 Normal'}
+        </button>
+        <button
+          class={`btn toggle ${s.settings.help ? 'on' : ''}`}
+          onClick={() => update((d) => void (d.settings.help = !d.settings.help))}
+          aria-label="Şedde ve cezim renkleri"
+        >
+          🎨
+        </button>
       </div>
+
+      <div class={`read-card ${recording ? 'rec' : ''}`} style={{ fontSize: `${2.4 * s.settings.fontScale}rem` }}>
+        <Mushaf
+          page={pg}
+          help={s.settings.help}
+          only={cur.key}
+          activeKey={mode === 'model' || tap >= 0 ? cur.key : null}
+          activeWord={tap >= 0 ? tap : word}
+          onWord={tapWord}
+        />
+      </div>
+      <p class="hint">Takıldığın kelimeye dokun, okunuşunu duy 👆</p>
 
       <div class="read-controls">
         <button class="btn round mid" onClick={() => (mode === 'model' ? stopPlayback() : listenModel())} aria-label="Hocayı dinle" disabled={recording}>

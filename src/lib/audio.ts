@@ -1,3 +1,5 @@
+import { getState } from './store';
+
 // Ses çalma: önce uygulamaya gömülü dosya, yoksa internetteki kaynak.
 export type AudioKind = 'husary' | 'minshawy' | 'wbw';
 
@@ -77,9 +79,10 @@ export function stopAll() {
   if ('speechSynthesis' in window) speechSynthesis.cancel();
 }
 
+/** Tek kelimenin okunuşu. Yavaş modda kelime de yavaş okunur. */
 export const playWord = (wbw: string) => {
   main.pause();
-  return playThrough(wordEl, audioUrls('wbw', wbw));
+  return playThrough(wordEl, audioUrls('wbw', wbw), getState().settings.slow ? 0.75 : 1);
 };
 
 // ---- Küçük efekt sesleri (WebAudio, dosyasız) ----
